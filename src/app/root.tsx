@@ -1,0 +1,97 @@
+import {isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration} from "react-router";
+import {type ReactNode} from "react";
+import {Provider as ReduxProvider} from 'react-redux';
+
+import "@/app/styles/app.css";
+import type {Route} from "./+types/root";
+import {Provider} from "@/shared/ui/provider";
+import {Toaster} from "@/shared/ui/toaster";
+import {AuthContextProvider} from "@/shared/api/context";
+import {store} from "@/app/store";
+
+
+export const links: Route.LinksFunction = () => [
+    {rel: "icon", type: "image/svg+xml", href: "/Favicon.svg"},
+    {rel: "icon", type: "image/png", sizes: "64x64", href: "/Favicon@2x.png"},
+    {rel: "icon", type: "image/png", sizes: "32x32", href: "/Favicon.png"},
+    {rel: "icon", type: "image/png", sizes: "16x16", href: "/Favicon@0.5x.png"},
+    {rel: "apple-touch-icon", sizes: "64x64", href: "/Favicon@2x.png"},
+    {rel: "manifest", href: "/manifest.webmanifest"},
+    {rel: "preconnect", href: "https://fonts.googleapis.com"},
+    {
+        rel: "preconnect",
+        href: "https://fonts.gstatic.com",
+        crossOrigin: "anonymous",
+    },
+    {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    },
+];
+
+export function Layout({children}: { children: ReactNode }) {
+    return (
+        <html lang="en" suppressHydrationWarning>
+        <head>
+            <title>Homebranch</title>
+            <meta charSet="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+            <meta name="application-name" content="Homebranch"/>
+            <meta name="description" content="Manage and read your self-hosted ebook collection across devices."/>
+            <meta name="mobile-web-app-capable" content="yes"/>
+            <meta name="apple-mobile-web-app-capable" content="yes"/>
+            <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+            <meta name="apple-mobile-web-app-title" content="Homebranch"/>
+            <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff"/>
+            <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a1a"/>
+            <Meta/>
+            <Links/>
+        </head>
+        <body>
+        <Provider>
+            <ReduxProvider store={store}>
+                <AuthContextProvider>
+                    <Toaster/>
+                    {children}
+                    <ScrollRestoration/>
+                    <Scripts/>
+                </AuthContextProvider>
+            </ReduxProvider>
+        </Provider>
+        </body>
+        </html>
+    );
+}
+
+export default function App() {
+    return <Outlet/>;
+}
+
+export function ErrorBoundary({error}: Route.ErrorBoundaryProps) {
+    let message = "Oops!";
+    let details = "An unexpected error occurred.";
+    let stack: string | undefined;
+
+    if (isRouteErrorResponse(error)) {
+        message = error.status === 404 ? "404" : "Error";
+        details =
+            error.status === 404
+                ? "The requested page could not be found."
+                : error.statusText || details;
+    } else if (import.meta.env.DEV && error && error instanceof Error) {
+        details = error.message;
+        stack = error.stack;
+    }
+
+    return (
+        <main className="pt-16 p-4 container mx-auto">
+            <h1>{message}</h1>
+            <p>{details}</p>
+            {stack && (
+                <pre className="w-full p-4 overflow-x-auto">
+          <code>{stack}</code>
+        </pre>
+            )}
+        </main>
+    );
+}
