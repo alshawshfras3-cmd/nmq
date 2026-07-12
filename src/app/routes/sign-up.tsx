@@ -28,6 +28,7 @@ export async function clientAction({request}: Route.ClientActionArgs) {
 export default function SignUp({loaderData}: Route.ComponentProps) {
     const fetcher = useFetcher<SignUpActionData>();
     const errors = fetcher.data?.errors ?? {};
+    const successMessage = fetcher.data?.successMessage;
     const {oidcEnabled, oidcProviderName} = loaderData;
     const {colorMode} = useColorMode();
     const logoSrc = colorMode === "dark"
@@ -69,10 +70,15 @@ export default function SignUp({loaderData}: Route.ComponentProps) {
                 <fetcher.Form method="post">
                     <Card.Body px={6} pt={oidcEnabled ? 0 : 4} pb={2}>
                         <Stack gap={4}>
-                            <TextField label="Name" name="name" error={Boolean(errors.name)} errorText={errors.name} required/>
-                            <TextField label="Email" name="email" type="email" error={Boolean(errors.email)} errorText={errors.email} required/>
-                            <TextField label="Password" name="password" type="password" error={Boolean(errors.password)} errorText={errors.password} required/>
-                            <TextField label="Confirm Password" name="password_confirmation" type="password" error={Boolean(errors.password_confirmation)} errorText={errors.password_confirmation} required/>
+                            {successMessage && (
+                                <Text color="green.600" fontSize="sm" fontWeight="medium">
+                                    {successMessage}
+                                </Text>
+                            )}
+                            <TextField label="Name" name="name" autoComplete="name" error={Boolean(errors.name)} errorText={errors.name} required/>
+                            <TextField label="Email" name="email" type="email" autoComplete="email" error={Boolean(errors.email)} errorText={errors.email} required/>
+                            <TextField label="Password" name="password" type="password" autoComplete="new-password" error={Boolean(errors.password)} errorText={errors.password} required/>
+                            <TextField label="Confirm Password" name="password_confirmation" type="password" autoComplete="new-password" error={Boolean(errors.password_confirmation)} errorText={errors.password_confirmation} required/>
                         </Stack>
                     </Card.Body>
                     <Card.Footer px={6} pb={6} flexDirection="column" gap={3}>

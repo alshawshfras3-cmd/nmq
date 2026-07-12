@@ -3,6 +3,7 @@ import {authenticationAxiosInstance, axiosErrorHandler} from "@/features/authent
 import {redirect} from "react-router";
 
 export type SignUpActionData = {
+    successMessage?: string;
     errors?: {
         name?: string;
         email?: string;
@@ -36,9 +37,21 @@ export default async function signUp(formData: FormData): Promise<Response | Sig
         .then(response => {
             const responseData = response.data;
             if (responseData.success) {
-                sessionStorage.setItem('user_id', responseData.value.userId);
+                const accessToken = responseData.value?.accessToken;
+                const userId = responseData.value?.userId;
+
+                if (!accessToken) {
+                    return {
+                        successMessage: 'Account created. Please check your email and open the verification link before signing in.',
+                    };
+                }
+
+                if (userId) {
+                    sessionStorage.setItem('user_id', userId);
+                }
+
                 try {
-                    const payload = JSON.parse(atob(responseData.value.accessToken.split('.')[1]));
+                    const payload = JSON.parse(atob(accessToken.split('.')[1]));
                     sessionStorage.setItem('user_role', payload.roles?.[0] ?? 'USER');
                 } catch {
                     sessionStorage.setItem('user_role', 'USER');
@@ -46,7 +59,7 @@ export default async function signUp(formData: FormData): Promise<Response | Sig
                 return redirect("/")
             }
 
-            return null;
+            return {errors: {email: 'Unable to create the account. Please try again.'}};
         })
         .catch(axiosErrorHandler);
 
