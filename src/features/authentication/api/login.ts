@@ -1,27 +1,25 @@
-import {LoginDto} from "@/features/authentication/dtos";
-import {authenticationAxiosInstance, axiosErrorHandler} from "@/features/authentication/api/axios";
 import {replace} from "react-router";
+import {supabase} from "@/shared/api/supabase";
 
-export async function login(formData: FormData) {
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+export type LoginActionData = { error?: string };
 
-    const loginDto = new LoginDto(email, password);
+function mapLoginError(message?: string): string {
+    const lower = message?.toLowerCase() ?? "";
+    if (lower.includes("email not confirmed")) return "Please verify your email before signing in.";
+    if (lower.includes("invalid login") || lower.includes("invalid credentials")) return "Invalid email or password.";
+    if (lower.includes("fetch") || lower.includes("network")) return "Unable to connect to the authentication service.";
+    return "Unable to sign in. Please try again.";
+}
 
-    return await authenticationAxiosInstance.post("/login", loginDto)
-        .then(response => {
-            const responseData = response.data;
-            if (responseData.success) {
-                sessionStorage.setItem('user_id', responseData.value.userId);
-                try {
-                    const payload = JSON.parse(atob(responseData.value.accessToken.split('.')[1]));
-                    sessionStorage.setItem('user_role', payload.role ?? 'USER');
-                } catch {
-                    sessionStorage.setItem('user_role', 'USER');
-                }
-                return replace('/');
-            }
+export async function login(formData: FormData): Promise<Response | LoginActionData> {
+    const email = String(formData.get('email') ?? '').trim().toLowerCase();
+    const password = String(formData.get('password') ?? '');
+    const returnTo = String(formData.get('returnTo') ?? '/');
 
-        })
-        .catch(axiosErrorHandler);
+    if (!email || !password) return {error: "Email and password are required."};
+
+    const {error} = await supabase.auth.signInWithPassword({email, password});
+    if (error) return {error: mapLoginError(error.message)};
+
+    return replace(returnTo.startsWith('/') ? returnTo : '/');
 }

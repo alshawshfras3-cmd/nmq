@@ -18,7 +18,8 @@ export default [
     route('logout', 'routes/dashboard/logout.tsx'),
     route("login", "routes/login.tsx"),
     route("sign-up", "routes/sign-up.tsx"),
-    route("oidc-callback", "routes/oidc-callback.tsx"),
     route("email-verified", "routes/email-verified.tsx"),
+    route("forgot-password", "routes/forgot-password.tsx"),
+    route("reset-password", "routes/reset-password.tsx"),
 
 ] satisfies RouteConfig;

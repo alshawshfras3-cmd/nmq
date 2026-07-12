@@ -9,69 +9,30 @@ import {
 import {fetchBaseQuery} from "@reduxjs/toolkit/query";
 import {config} from "@/shared";
 import ToastFactory from "@/shared/lib/toast/toast";
-import {Mutex} from "async-mutex";
+import {supabase} from "@/shared/api/supabase";
 
-// Create a mutex to prevent multiple refresh attempts
-const refreshTokenMutex = new Mutex();
-
-const baseQueryWithAuthRefresh: BaseQueryFn<
+const baseQueryWithSupabaseAuth: BaseQueryFn<
     string | FetchArgs,
     unknown,
     FetchBaseQueryError
 > = async (args, api, extraOptions): Promise<QueryReturnValue<unknown, FetchBaseQueryError, FetchBaseQueryMeta>> => {
-    // wait until the mutex is available without locking it
-    await refreshTokenMutex.waitForUnlock();
-    let result = await fetchBaseQuery({
+    const {data} = await supabase.auth.getSession();
+    const accessToken = data.session?.access_token;
+
+    return fetchBaseQuery({
         baseUrl: config.apiUrl,
-        credentials: 'include',
-    })(args, api, extraOptions);
-
-    if (result.error && result.error.status === 401) {
-        if (!refreshTokenMutex.isLocked()) {
-            const release = await refreshTokenMutex.acquire();
-            try {
-                // refresh the token
-                const refreshResult = await fetchBaseQuery({
-                    baseUrl: config.authenticationUrl,
-                    credentials: 'include',
-                    method: 'POST',
-                })({url: '/refresh'}, api, extraOptions);
-
-                if (refreshResult.data) {
-                    result = await fetchBaseQuery({
-                        baseUrl: config.apiUrl,
-                        credentials: 'include',
-                    })(args, api, extraOptions);
-                } else {
-                    // Refresh failed, log out
-                    window.location.href = '/login';
-                }
-            } finally {
-                release();
+        prepareHeaders: (headers) => {
+            if (accessToken) {
+                headers.set("Authorization", `Bearer ${accessToken}`);
             }
-        } else {
-            // Wait for the mutex to be released by the other request
-            await refreshTokenMutex.waitForUnlock();
-            // Retry the original query (token should be refreshed now)
-            result = await fetchBaseQuery({
-                baseUrl: config.apiUrl,
-                credentials: 'include',
-            })(args, api, extraOptions);
-        }
-    }
-
-    return result;
+            return headers;
+        },
+    })(args, api, extraOptions);
 }
 
 export const homebranchApi = createApi({
-    baseQuery: baseQueryWithAuthRefresh,
+    baseQuery: baseQueryWithSupabaseAuth,
     tagTypes: ['Book', 'BookShelf', 'User', 'Author', 'Job', 'BookDuplicate'],
-    endpoints: () => ({})
-})
-
-export const authenticationApi = createApi({
-    reducerPath: 'authentication',
-    baseQuery: fetchBaseQuery({baseUrl: config.authenticationUrl}),
     endpoints: () => ({})
 })
 
@@ -107,3 +68,9 @@ export function handleRtkError(error: unknown) {
         ToastFactory({message: "Something went wrong", type: "error"});
     }
 }
+
+export const authenticationApi = createApi({
+    reducerPath: 'authentication',
+    baseQuery: fetchBaseQuery({baseUrl: config.apiUrl}),
+    endpoints: () => ({})
+})

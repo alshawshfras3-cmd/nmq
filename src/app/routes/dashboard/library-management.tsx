@@ -41,6 +41,7 @@ import {useGetUsersQuery} from "@/entities/user";
 import {JobRow} from "@/entities/job/ui/JobRow";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import ToastFactory from "@/shared/lib/toast/toast";
+import {useAuth} from "@/shared/api/context";
 import {handleRtkError} from "@/shared/api/rtk-query";
 import type {BookDuplicateWithBooksModel, BookModel, ResolveDuplicateAction} from "@/entities/book";
 import {useListDuplicatesQuery, useResolveDuplicateMutation, useTriggerDuplicateScanMutation,} from "@/entities/book";
@@ -307,8 +308,7 @@ function DuplicatePairCard({
 // ---- Main page ----
 
 export default function LibraryManagement() {
-    const userRole = sessionStorage.getItem("user_role") ?? "USER";
-    const isAdmin = userRole === "ADMIN";
+    const {isAdmin} = useAuth();
 
     // Users list — needed by admin sections
     const {data: users = []} = useGetUsersQuery(undefined, {skip: !isAdmin});

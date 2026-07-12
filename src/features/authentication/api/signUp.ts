@@ -1,6 +1,5 @@
-import {SignUpDto} from "@/features/authentication/dtos";
-import {authenticationAxiosInstance, axiosErrorHandler} from "@/features/authentication/api/axios";
 import {redirect} from "react-router";
+import {supabase} from "@/shared/api/supabase";
 
 export type SignUpActionData = {
     successMessage?: string;
@@ -13,56 +12,48 @@ export type SignUpActionData = {
     };
 };
 
-export default async function signUp(formData: FormData): Promise<Response | SignUpActionData | null> {
-    const name = formData.get('name');
-    const email = formData.get('email');
-    const password = formData.get('password');
-    const password_confirmation = formData.get('password_confirmation');
+function mapSignUpError(message?: string): SignUpActionData {
+    const lower = message?.toLowerCase() ?? "";
+    if (lower.includes("already") || lower.includes("registered")) return {errors: {email: "This email is already registered."}};
+    if (lower.includes("invalid email")) return {errors: {email: "Please enter a valid email address."}};
+    if (lower.includes("password")) return {errors: {password: "Password is too weak. Use at least 8 characters."}};
+    if (lower.includes("fetch") || lower.includes("network")) return {errors: {email: "Unable to connect to the authentication service."}};
+    return {errors: {email: "Unable to create the account. Please try again."}};
+}
 
-    if (
-        typeof name !== 'string' ||
-        typeof email !== 'string' ||
-        typeof password !== 'string' ||
-        typeof password_confirmation !== 'string'
-    ) {
+export default async function signUp(formData: FormData): Promise<Response | SignUpActionData> {
+    const name = String(formData.get('name') ?? '').trim();
+    const email = String(formData.get('email') ?? '').trim().toLowerCase();
+    const password = String(formData.get('password') ?? '');
+    const passwordConfirmation = String(formData.get('password_confirmation') ?? '');
+
+    if (!name || !email || !password || !passwordConfirmation) {
         return {errors: {email: 'Please complete all required fields.'}};
     }
 
-    if (password !== password_confirmation) {
+    if (password !== passwordConfirmation) {
         return {errors: {password_confirmation: 'Passwords do not match.'}};
     }
 
-    const signUpDto: SignUpDto = new SignUpDto(name, email, password, password_confirmation);
+    if (password.length < 8) {
+        return {errors: {password: 'Password must be at least 8 characters.'}};
+    }
 
-    return authenticationAxiosInstance.post('/sign-up', signUpDto)
-        .then(response => {
-            const responseData = response.data;
-            if (responseData.success) {
-                const accessToken = responseData.value?.accessToken;
-                const userId = responseData.value?.userId;
+    const {data, error} = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {full_name: name},
+            emailRedirectTo: `${window.location.origin}/email-verified`,
+        },
+    });
 
-                if (!accessToken) {
-                    return {
-                        successEmail: email,
-                        successMessage: 'Account created. Please check your email and open the verification link before signing in.',
-                    };
-                }
+    if (error) return mapSignUpError(error.message);
 
-                if (userId) {
-                    sessionStorage.setItem('user_id', userId);
-                }
+    if (data.session) return redirect('/');
 
-                try {
-                    const payload = JSON.parse(atob(accessToken.split('.')[1]));
-                    sessionStorage.setItem('user_role', payload.roles?.[0] ?? 'USER');
-                } catch {
-                    sessionStorage.setItem('user_role', 'USER');
-                }
-                return redirect("/")
-            }
-
-            return {errors: {email: 'Unable to create the account. Please try again.'}};
-        })
-        .catch(axiosErrorHandler);
-
+    return {
+        successEmail: email,
+        successMessage: 'Account created. Please check your email and open the verification link before signing in.',
+    };
 }

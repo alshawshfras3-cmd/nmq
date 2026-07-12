@@ -1,13 +1,8 @@
 import type {Route} from "./+types/users";
 import {UserManagementPage} from "@/pages/userManagement";
-import {redirect} from "react-router";
-
-export function clientLoader() {
-    if (sessionStorage.getItem('user_role') !== 'ADMIN') {
-        return redirect('/');
-    }
-    return null;
-}
+import {Navigate} from "react-router";
+import {Center, Spinner} from "@chakra-ui/react";
+import {useAuth} from "@/shared/api/context";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -16,5 +11,10 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Users() {
+    const {loading, isAdmin} = useAuth();
+
+    if (loading) return <Center minH="100%"><Spinner size="lg"/></Center>;
+    if (!isAdmin) return <Navigate to="/" replace/>;
+
     return <UserManagementPage/>;
 }

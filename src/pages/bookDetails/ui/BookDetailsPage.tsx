@@ -15,6 +15,7 @@ import {ManageBookShelvesButton} from "@/entities/bookShelf";
 import {Tooltip} from "@/shared/ui/tooltip";
 import {deleteSavedPosition, getSavedPosition} from "@/features/reader/api/savedPositionApi";
 import ToastFactory from "@/shared/lib/toast/toast";
+import {useAuth} from "@/shared/api/context";
 import {handleRtkError} from "@/shared/api/rtk-query";
 import {getStoredProgress, removeStoredProgress} from "@/features/reader";
 import {
@@ -117,9 +118,9 @@ export default function BookDetailsPage({book}: BookDetailsPageProps) {
         setSelectedFormat(preferredFormat?.format);
     }, [preferredFormat?.format]);
 
-    const currentUserId = sessionStorage.getItem('user_id');
-    const currentUserRole = sessionStorage.getItem('user_role');
-    const canDelete = currentUserRole === 'ADMIN' || currentUserId === book.uploadedByUserId;
+    const {user, isAdmin} = useAuth();
+    const currentUserId = user?.id;
+    const canDelete = isAdmin || currentUserId === book.uploadedByUserId;
 
     const [isCurrentlyReading, setIsCurrentlyReading] = useState(
         isBookOpenedLocally(book.id)

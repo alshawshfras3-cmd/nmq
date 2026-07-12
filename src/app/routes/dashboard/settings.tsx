@@ -19,6 +19,7 @@ import {handleRtkError} from "@/shared/api/rtk-query";
 import TextField from "@/shared/ui/TextField";
 import PasswordTextField from "@/shared/ui/PasswordTextField";
 import ToastFactory from "@/shared/lib/toast/toast";
+import {useAuth} from "@/shared/api/context";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -27,9 +28,9 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Settings() {
-    const userId = sessionStorage.getItem("user_id");
-    const userRole = sessionStorage.getItem("user_role") ?? "USER";
-    const isAdmin = userRole === "ADMIN";
+    const {user: authUser, profile, isAdmin} = useAuth();
+    const userId = authUser?.id;
+    const userRole = profile?.role ?? "USER";
     const {data: user, isLoading} = useGetUserByIdQuery(userId ?? "", {
         skip: !userId,
     });

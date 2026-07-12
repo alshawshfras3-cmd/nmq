@@ -6,6 +6,7 @@ import {BookShelfNavigationSection} from "@/entities/bookShelf";
 import {SearchLibrary} from "@/features/library";
 import type {IconType} from "react-icons";
 import {ColorModeIcon, useColorMode} from "@/shared/ui/color-mode";
+import {useAuth} from "@/shared/api/context";
 
 interface NavigationContentProps {
     onNavigate?: () => void;
@@ -22,7 +23,7 @@ export function NavigationContent({onNavigate}: NavigationContentProps) {
     const location = useLocation();
     const fetcher = useFetcher();
     let busy = fetcher.state !== 'idle';
-    const isAdmin = sessionStorage.getItem('user_role') === 'ADMIN';
+    const {isAdmin} = useAuth();
     const {colorMode, toggleColorMode} = useColorMode();
 
     return (
