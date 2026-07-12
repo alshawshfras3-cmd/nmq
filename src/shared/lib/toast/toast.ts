@@ -6,18 +6,20 @@ export interface ToastFactoryParams {
 }
 
 export default function ToastFactory({message, type}: ToastFactoryParams) {
+    const title = message.trim() || "Something went wrong";
+
     switch (type) {
         case "success":
-            toaster.success({description: message});
+            toaster.success({title});
             break;
         case "warning":
-            toaster.warning({description: message});
+            toaster.warning({title});
             break;
         case "error":
-            toaster.error({description: message});
+            toaster.error({title});
             break;
         case "info":
-            toaster.info({description: message});
+            toaster.info({title});
             break;
     }
 }
