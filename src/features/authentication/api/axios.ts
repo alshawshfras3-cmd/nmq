@@ -7,16 +7,45 @@ export const authenticationAxiosInstance = axios.create({
     withCredentials: true,
 })
 
+function getErrorMessages(error: any): string[] {
+    const status = error.response?.status;
+    const statusText = error.response?.statusText;
+    const data = error.response?.data;
+
+    if (data && typeof data === "object") {
+        const errorResponseData = new ApiErrorResponse(data);
+        const messages = errorResponseData.message.filter(Boolean);
+
+        if (messages.length > 0) {
+            return messages;
+        }
+
+        if (typeof data.error === "string" && data.error.trim()) {
+            return [data.error];
+        }
+    }
+
+    if (typeof data === "string" && data.trim()) {
+        return [data];
+    }
+
+    if (status) {
+        const detail = statusText ? `: ${statusText}` : "";
+        return [`Authentication service returned ${status}${detail}. Check VITE_AUTHENTICATION_URL and the auth service /sign-up endpoint.`];
+    }
+
+    if (error.request) {
+        return ["Could not reach the authentication service. Please check VITE_AUTHENTICATION_URL and VITE_AUTHENTICATION_ROOT in the deployment environment."];
+    }
+
+    return ["Something went wrong, please try again later"];
+}
+
 export function axiosErrorHandler(error: any) {
     if (!error.handledByInterceptor) {
-        if (error.response) {
-            const errorResponseData = new ApiErrorResponse(error.response.data);
-            errorResponseData.message.forEach(message => {
-                ToastFactory({message: message, type: "error"});
-            })
-        } else {
-            ToastFactory({message: "Something went wrong, please try again later", type: "error"});
-        }
+        getErrorMessages(error).forEach(message => {
+            ToastFactory({message, type: "error"});
+        })
     }
     return null;
 }
