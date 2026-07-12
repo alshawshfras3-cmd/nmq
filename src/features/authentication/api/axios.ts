@@ -9,11 +9,13 @@ export const authenticationAxiosInstance = axios.create({
 
 export function axiosErrorHandler(error: any) {
     if (!error.handledByInterceptor) {
-        if (error.response) {
+        if (error.response?.data) {
             const errorResponseData = new ApiErrorResponse(error.response.data);
             errorResponseData.message.forEach(message => {
                 ToastFactory({message: message, type: "error"});
             })
+        } else if (error.request) {
+            ToastFactory({message: "Could not reach the authentication service. Please check the deployment environment variables.", type: "error"});
         } else {
             ToastFactory({message: "Something went wrong, please try again later", type: "error"});
         }
