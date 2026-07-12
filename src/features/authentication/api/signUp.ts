@@ -4,6 +4,7 @@ import {redirect} from "react-router";
 
 export type SignUpActionData = {
     successMessage?: string;
+    successEmail?: string;
     errors?: {
         name?: string;
         email?: string;
@@ -42,6 +43,7 @@ export default async function signUp(formData: FormData): Promise<Response | Sig
 
                 if (!accessToken) {
                     return {
+                        successEmail: email,
                         successMessage: 'Account created. Please check your email and open the verification link before signing in.',
                     };
                 }

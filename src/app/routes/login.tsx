@@ -29,6 +29,7 @@ export default function Login({loaderData}: Route.ComponentProps) {
     const {oidcEnabled, oidcProviderName} = loaderData;
     const [searchParams, setSearchParams] = useSearchParams();
     const error = searchParams.get("error");
+    const verified = searchParams.get("verified");
     const {colorMode} = useColorMode();
     const logoSrc = colorMode === "dark"
         ? "/Logo%202-Color%20For%20Dark.svg"
@@ -38,8 +39,14 @@ export default function Login({loaderData}: Route.ComponentProps) {
         if (error) {
             ToastFactory({message: error, type: "error"});
             setSearchParams({}, {replace: true});
+            return;
         }
-    }, [error, setSearchParams]);
+
+        if (verified === "1") {
+            ToastFactory({message: "Email verified. You can sign in now.", type: "success"});
+            setSearchParams({}, {replace: true});
+        }
+    }, [error, verified, setSearchParams]);
 
     const handleOidcLogin = () => {
         window.location.href = `${config.authenticationUrl}/login/oidc?returnTo=/oidc-callback`;
@@ -76,8 +83,8 @@ export default function Login({loaderData}: Route.ComponentProps) {
                 <fetcher.Form method="post">
                     <Card.Body px={6} pt={oidcEnabled ? 0 : 4} pb={2}>
                         <Stack gap={4}>
-                            <TextField label="Email" name="email" type="email" required/>
-                            <TextField label="Password" name="password" type="password" required/>
+                            <TextField label="Email" name="email" type="email" autoComplete="email" required/>
+                            <TextField label="Password" name="password" type="password" autoComplete="current-password" required/>
                         </Stack>
                     </Card.Body>
                     <Card.Footer px={6} pb={6} flexDirection="column" gap={3}>

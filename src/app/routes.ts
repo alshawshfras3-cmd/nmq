@@ -19,5 +19,6 @@ export default [
     route("login", "routes/login.tsx"),
     route("sign-up", "routes/sign-up.tsx"),
     route("oidc-callback", "routes/oidc-callback.tsx"),
+    route("email-verified", "routes/email-verified.tsx"),
 
 ] satisfies RouteConfig;
