@@ -18,7 +18,6 @@
 # AI assistant files
 .claude/
 .github/copilot-instructions.md
-.github/workflows/
 CLAUDE.md
 
 # Logs

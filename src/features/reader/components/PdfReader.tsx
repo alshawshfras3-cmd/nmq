@@ -25,6 +25,7 @@ import {getStoredLocator} from "@/features/reader";
 import {deserializeLocatorFromCloud} from "@/features/reader";
 
 const KEYBOARD_HINT_KEY = "pdf-reader-keyboard-hint-shown";
+const PDF_DOCUMENT_OPTIONS = {withCredentials: true};
 
 type PdfOutlineItem = {
     title?: string;
@@ -463,6 +464,7 @@ export function PdfReader({book, format}: PdfReaderProps) {
                     <Flex justify="center" minH="100%" align="start">
                         <Document
                             file={pdfUrl}
+                            options={PDF_DOCUMENT_OPTIONS}
                             loading={null}
                             onLoadSuccess={(loadedPdf) => {
                                 setNumPages(loadedPdf.numPages);
