@@ -1,43 +1,71 @@
-# How to contribute
+# Contributing to NMQ
 
-We welcome contributions to the project! 
+NMQ is an ebook-library frontend based on [HomeBranch Web](https://github.com/Oghamark/homebranch-web). Contributions to this maintained copy belong in [alshawshfras3-cmd/nmq](https://github.com/alshawshfras3-cmd/nmq), with pull requests targeting **`main`**.
 
-If you have an idea for a new feature, or have found a bug, please open an issue to discuss it.
+## Report a problem or propose a change
 
-## Development
+Use this repository's [issues](https://github.com/alshawshfras3-cmd/nmq/issues) for reproducible bugs and feature proposals. Include:
 
-To set up a development environment, follow these steps:
+- The affected commit or branch, browser, and operating system.
+- Steps to reproduce the problem and the expected and actual behavior.
+- Relevant frontend or backend errors, with passwords, tokens, cookies, and personal information removed.
+- Whether the library API and authentication service are reachable and which services were involved.
 
+For a larger change, explain the use case and proposed scope in an issue before implementation. Authentication replacements and API contract changes need coordination with the backend; a frontend-only change cannot provide missing backend behavior.
 
-> [!IMPORTANT]
->  You will need to have the backend API and an authentication service running locally to test your changes. 
-> Please refer to the [backend repository](https://github.com/Oghamark/homebranch) and the [auth repository](https://github.com/Oghamark/Authentication)
-> or our [documentation](https://homebranch.app/docs/getting-started/) for instructions on how to set up the backend.
+## Set up a working copy
 
-1. [Fork](https://help.github.com/articles/fork-a-repo/) the repository 
-and [clone](https://help.github.com/articles/cloning-a-repository) it to your local machine.
-2. Add the remote upstream repository:
-    ```bash
-    git remote add upstream https://github.com/Oghamark/homebranch-web.git
-    ```
-3. Create a new branch for your feature or bug fix: 
-    ```bash
-    git checkout -b my-feature-branch dev
-    ```
-4. Run the development server: 
-    ```bash 
-    npm run dev
-    ```
-5. Make your changes and commit them with descriptive messages.
-6. Push your changes to your fork: 
-    ```bash
-    git push origin my-feature-branch
-    ```
-7. Open a pull request against the `dev` branch of the original repository.
+1. Fork [alshawshfras3-cmd/nmq](https://github.com/alshawshfras3-cmd/nmq) into your GitHub account and clone your fork.
+2. Add NMQ as the remote used to keep your copy current:
 
-## Contributing Code of Conduct
+   ```sh
+   git remote add upstream https://github.com/alshawshfras3-cmd/nmq.git
+   git fetch upstream
+   git switch -c fix/describe-the-problem upstream/main
+   ```
 
-- If you are contributing to an existing issue, please comment on the issue to let others know you are working on it.
-- If you are opening a new issue, please provide as much detail as possible, including steps to reproduce the issue, screenshots, and any relevant logs.
-- When submitting a pull request, please include a clear description of the changes you have made and the problem they solve. If your pull request addresses an existing issue, please reference the issue number in your description (e.g., "Fixes #123").
-- Please ensure your code follows the project's coding style.
+3. Install dependencies and prepare local configuration:
+
+   ```sh
+   npm ci
+   cp .env.example .env
+   ```
+
+4. Follow [the README's local development instructions](README.md#local-development) to connect the library API and authentication service, then run:
+
+   ```sh
+   npm run dev
+   ```
+
+Unit tests, type checking, and a frontend build can be run independently of a live library. Testing login, uploads, permissions, or synchronization end to end requires the backend services.
+
+## Implement and verify
+
+Keep changes focused on a reproducible problem or a clearly described user need. Follow the surrounding TypeScript and React conventions, and add a regression test when changing behavior that can fail again.
+
+Run the checks relevant to your changes. Code changes should pass:
+
+```sh
+npm test
+npm run typecheck
+npm run build
+git diff --check
+```
+
+For an interface change, check a narrow and a wide viewport and include a screenshot when it helps review. For authentication or API changes, describe the backend configuration used and the user flows you actually exercised. Report tests you could not run along with the reason.
+
+Do not commit `.env`, credentials, generated build output, or `node_modules`. Update setup instructions when configuration or backend requirements change.
+
+## Open a pull request
+
+Push your branch to your fork and open a pull request against **`alshawshfras3-cmd/nmq:main`**. Explain:
+
+- The problem and how users encounter it.
+- What changes and the resulting behavior.
+- The checks performed and any remaining limitations.
+
+Link the relevant issue when there is one. Include dependency lockfile changes when dependencies change, and retain the project's license and attribution.
+
+## Relationship to HomeBranch
+
+The HomeBranch repositories remain the source of the original frontend, backend, and authentication components. Preserve their attribution when adapting code. Fixes that also apply upstream can be proposed to the relevant HomeBranch repository through its own contribution process; an NMQ pull request does not automatically reach those maintainers.

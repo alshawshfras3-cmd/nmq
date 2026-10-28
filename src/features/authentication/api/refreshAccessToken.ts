@@ -1,7 +1,6 @@
 import {authenticationAxiosInstance} from "@/features/authentication/api/axios";
 
 export async function refreshAccessToken() {
-    return await authenticationAxiosInstance.post('/refresh').catch((error) => {
-        console.warn(error)
-    });
+    // Callers must distinguish an expired session from a temporary network failure.
+    return authenticationAxiosInstance.post('/refresh');
 }

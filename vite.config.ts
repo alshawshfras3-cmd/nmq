@@ -3,9 +3,9 @@ import { defineConfig, loadEnv } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-const env = loadEnv(process.env.NODE_ENV as string, process.cwd(), 'VITE_')
-
-export default defineConfig({
+export default defineConfig(({mode}) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  return {
   envDir: ".",
   envPrefix: "VITE_",
   plugins: [
@@ -66,24 +66,24 @@ export default defineConfig({
     }),
   ],
   server: {
-    allowedHosts: [process.env.ALLOWED_HOST ?? "localhost"],
-    cors: {
-        origin: process.env.CORS_ORIGIN,
-    },
+    allowedHosts: [env.ALLOWED_HOST || "localhost"],
+    cors: env.CORS_ORIGIN ? {origin: env.CORS_ORIGIN} : undefined,
       proxy: {
         '/api': {
-            target: env.VITE_API_ROOT,
+            target: env.VITE_API_ROOT || 'http://localhost:8080',
             changeOrigin: true,
             secure: false,
             headers: { 'X-Forwarded-Prefix': '/api' },
             rewrite: (path) => path.replace(/^\/api/, '')
         },
           '/auth': {
-            target: env.VITE_AUTHENTICATION_ROOT,
+            target: env.VITE_AUTHENTICATION_ROOT || 'http://localhost:3000',
             changeOrigin: true,
             secure: false,
+            cookiePathRewrite: {'/refresh': '/auth/refresh'},
             rewrite: (path) => path.replace(/^\/auth/, '')
           }
       }
   }
+  };
 });

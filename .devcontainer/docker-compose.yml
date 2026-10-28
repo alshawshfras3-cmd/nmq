@@ -1,6 +1,6 @@
 services:
   app:
-    image: node:20
+    image: node:24
     working_dir: /workspace
     volumes:
       - ..:/workspace:cached

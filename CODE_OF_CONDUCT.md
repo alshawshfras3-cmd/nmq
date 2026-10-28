@@ -58,9 +58,15 @@ representative at an online or offline event.
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-ryan.bezold@gmail.com.
+Instances of abusive, harassing, or otherwise unacceptable behavior in the NMQ
+community may be reported to the repository owner,
+[alshawshfras3-cmd](https://github.com/alshawshfras3-cmd). Use a private contact
+method published on that profile. If none is available, open a minimal issue in
+[the NMQ repository](https://github.com/alshawshfras3-cmd/nmq/issues) requesting a
+private contact channel. Do not include names, allegations, screenshots, or other
+sensitive details in the public request; provide them through the private
+channel once it is established.
+
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the
